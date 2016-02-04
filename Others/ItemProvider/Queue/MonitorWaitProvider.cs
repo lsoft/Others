@@ -11,7 +11,7 @@ namespace Others.ItemProvider.Queue
     /// Поставщик очереди, блокирующийся с помощью монитора.
     /// </summary>
     /// <typeparam name="T">Item type. Тип итема в очереди</typeparam>
-    public class MonitorWaitProvider<T> : IItemWaitProvider<T>, IDisposable
+    public class MonitorWaitProvider<T> : IQueueWaitProvider<T>, IDisposable
           where T : class
     {
         /// <summary>
@@ -63,19 +63,22 @@ namespace Others.ItemProvider.Queue
         }
 
         public OperationResultEnum AddItem(
-            T t
+            T t,
+            out int estimatedCount
             )
         {
             return
                 AddItem(
                     t,
-                    TimeSpan.FromMilliseconds(-1)
+                    TimeSpan.FromMilliseconds(-1),
+                    out estimatedCount
                     );
         }
 
         public OperationResultEnum AddItem(
             T t,
-            TimeSpan timeout
+            TimeSpan timeout,
+            out int estimatedCount
             )
         {
             if (t == null)
@@ -85,17 +88,50 @@ namespace Others.ItemProvider.Queue
 
             var myResult = OperationResultEnum.Dispose;
 
+            int mycount = 0;
             _disposer.DoWorkSafely(
                 () =>
                 {
                     myResult = DoAddItem(
                         t,
-                        timeout
+                        timeout,
+                        out mycount
                         );
                 });
 
+            estimatedCount = mycount;
+
             return
                 myResult;
+        }
+
+        public OperationResultEnum AddItem(
+            T t
+            )
+        {
+            int count;
+
+            return
+                AddItem(
+                    t,
+                    TimeSpan.FromMilliseconds(-1),
+                    out count
+                    );
+        }
+
+        public OperationResultEnum AddItem(
+            T t,
+            TimeSpan timeout
+            )
+        {
+            int count;
+
+            return
+                AddItem(
+                    t,
+                    timeout,
+                    out count
+                    );
         }
 
         public OperationResultEnum GetItem(
@@ -149,7 +185,11 @@ namespace Others.ItemProvider.Queue
 
         #region private code
 
-        private OperationResultEnum DoAddItem(T t, TimeSpan timeout)
+        private OperationResultEnum DoAddItem(
+            T t,
+            TimeSpan timeout,
+            out int count
+            )
         {
             if (t == null)
             {
@@ -162,7 +202,9 @@ namespace Others.ItemProvider.Queue
                 {
                     _queue.Enqueue(t);
 
-                    if (_queue.Count == 1)
+                    count = _queue.Count;
+
+                    if (count == 1)
                     {
                         _awakeEvent.Set();
                     }
@@ -176,6 +218,8 @@ namespace Others.ItemProvider.Queue
                 return
                     OperationResultEnum.Success;
             }
+
+            count = 0;
 
             return
                 OperationResultEnum.Timeout;

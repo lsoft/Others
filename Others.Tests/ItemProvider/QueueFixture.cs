@@ -1,20 +1,17 @@
-п»їusing System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Others.Disposer;
 using Others.ItemProvider;
-using Others.ItemProvider.Queue;
 
 namespace Others.Tests.ItemProvider
 {
-    [TestClass]
-    public class QueueWaitFixture
+    internal class QueueFixture
     {
-        private IItemWaitProvider<Item> _itemWaitProvider;
+        private readonly IItemWaitProvider<Item> _itemWaitProvider;
 
         private readonly ManualResetEvent _threadWorkEvent = new ManualResetEvent(false);
 
@@ -29,20 +26,32 @@ namespace Others.Tests.ItemProvider
 
         private string _forceAbortReason;
 
-        [TestMethod]
+        public QueueFixture(
+            IItemWaitProvider<Item> itemWaitProvider
+            )
+        {
+            if (itemWaitProvider == null)
+            {
+                throw new ArgumentNullException("itemWaitProvider");
+            }
+
+            _itemWaitProvider = itemWaitProvider;
+        }
+
+
         public void AggregationTest()
         {
             var random = new Random(
                 int.Parse(Guid.NewGuid().ToString().Replace("-", "").Substring(0, 7), NumberStyles.HexNumber)
                 );
 
-            //РїР°СЂР°РјРµС‚СЂС‹ С‚РµСЃС‚Р°
+            //параметры теста
             var writeThreadCount = 10;// Environment.ProcessorCount + 2;
-            var readThreadCount = 1;//Environment.ProcessorCount;// * 2;
-            var itemCount = 50000;
+            var readThreadCount = 6;//Environment.ProcessorCount;// * 2;
+            var itemCount = 100000;
             var maxValue = 1000;
 
-            //РїРѕРґРіРѕС‚РѕРІРєР° РґР°РЅРЅС‹С…
+            //подготовка данных
             var correctAccumulator = 0L;
 
             _datas = new Item[writeThreadCount][];
@@ -53,7 +62,7 @@ namespace Others.Tests.ItemProvider
                 for (var ii = 0; ii < itemCount; ii++)
                 {
                     var v = random.Next(maxValue) + 1;
-                    
+
                     _datas[di][ii] = new Item(v);
 
                     //Debug.WriteLine("Generated {0}", v);
@@ -84,14 +93,7 @@ namespace Others.Tests.ItemProvider
             _allThreads = writeThreads.ToList();
             _allThreads.AddRange(readThreads);
 
-            //РіРѕС‚РѕРІРёРј С‚РµСЃС‚РёСЂСѓРµРјС‹Р№ РєР»Р°СЃСЃ
-            _itemWaitProvider =
-                new MonitorWaitProvider<Item>(
-                //new SemaphoreWaitProvider<Item>(
-                    new OptimisticDisposer()
-                    //new ThreadUnsafeDisposer()
-                    );
-
+            //run the test
             for (var ti = 0; ti < writeThreads.Length; ti++)
             {
                 writeThreads[ti].Start(ti);
@@ -105,16 +107,23 @@ namespace Others.Tests.ItemProvider
 
             var before = DateTime.Now;
 
-            //РІСЃРµ Р·Р°РµР±Р»РѕСЃСЊ!
+            //все заеблось!
 
             for (var ti = 0; ti < _allThreads.Count; ti++)
             {
                 _allThreads[ti].Join();
             }
 
+            var after = DateTime.Now;
+
+            Item r;
+            if (_itemWaitProvider.GetItem(TimeSpan.Zero, out r) == OperationResultEnum.Success)
+            {
+                Assert.Fail("чота недочитали!");
+            }
+
             ((IDisposable)_itemWaitProvider).Dispose();
 
-            var after = DateTime.Now;
             Debug.WriteLine("Total count {0}, written count {1}, read count {2}", _totalCount, _writeCount, _readCount);
             Debug.WriteLine("Expected {0}, taken {1}", correctAccumulator, _accumulator);
             Debug.WriteLine("Time taken {0}", after - before);
@@ -143,12 +152,12 @@ namespace Others.Tests.ItemProvider
 
         private void WriteThread(object arg)
         {
-            //Р¶РґРµРј СЃРёРіРЅР°Р»Р° Рє РЅР°С‡Р°Р»Сѓ СЂР°Р±РѕС‚Сѓ
+            //ждем сигнала к началу работу
             _threadWorkEvent.WaitOne();
 
-            var threadIndex = (int) arg;
-            
-            //С‚СЂРёРґ РґРѕР±Р°РІР»РµРЅРёСЏ
+            var threadIndex = (int)arg;
+
+            //трид добавления
             var q = _datas[threadIndex];
 
             for (var ii = 0; ii < q.Length; ii++)
@@ -158,7 +167,7 @@ namespace Others.Tests.ItemProvider
                 //if(threadIndex == 0)
                 if (result != OperationResultEnum.Success)
                 {
-                    ForceAbort("РћС€РёР±РєР° РґРѕР±Р°РІР»РµРЅРёСЏ РёС‚РµРјР°");
+                    ForceAbort("Ошибка добавления итема");
                 }
 
                 //Debug.WriteLine("Stored {0}", q[ii].Value);
@@ -169,12 +178,12 @@ namespace Others.Tests.ItemProvider
 
         private void ReadThread(object arg)
         {
-            //Р¶РґРµРј СЃРёРіРЅР°Р»Р° Рє РЅР°С‡Р°Р»Сѓ СЂР°Р±РѕС‚Сѓ
+            //ждем сигнала к началу работу
             _threadWorkEvent.WaitOne();
 
-            var threadIndex = (int) arg;
+            var threadIndex = (int)arg;
 
-            //С‚СЂРёРґ РёР·РІР»РµС‡РµРЅРёСЏ
+            //трид извлечения
             var localAccumulator = 0L;
 
             while (Interlocked.Read(ref _readCount) < Interlocked.Read(ref _totalCount))

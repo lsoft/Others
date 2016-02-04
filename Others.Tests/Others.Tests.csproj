@@ -59,7 +59,10 @@
     <Compile Include="Helper\DisposerTest.cs" />
     <Compile Include="Helper\QItem.cs" />
     <Compile Include="Helper\TestStat.cs" />
-    <Compile Include="ItemProvider\QueueWaitFixture.cs" />
+    <Compile Include="ItemProvider\Item.cs" />
+    <Compile Include="ItemProvider\MonitorWaitProviderFixture.cs" />
+    <Compile Include="ItemProvider\QueueFixture.cs" />
+    <Compile Include="ItemProvider\SemaphoreWaitProviderFixture.cs" />
     <Compile Include="ItemProvider\SingleItemWaitFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
