@@ -6,7 +6,8 @@ using Others.Disposer;
 namespace Others.ItemProvider.Queue
 {
     /// <summary>
-    /// Поставщик очереди, блокирующийся с помощью семафора
+    /// Item provider with syncronization by Semaphore.
+    /// Поставщик очереди, блокирующийся с помощью семафора.
     /// </summary>
     /// <typeparam name="T">Тип итема в очереди</typeparam>
     public class SemaphoreWaitProvider<T> : IQueueWaitProvider<T>, IDisposable
