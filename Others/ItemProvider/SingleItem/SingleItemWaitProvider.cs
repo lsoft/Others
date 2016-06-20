@@ -21,19 +21,19 @@ namespace Others.ItemProvider.SingleItem
         /// Store item event.
         /// Ёвент что новый итем сохранен; он должен автоматически сбрасыватьс€ после просыпани€
         /// </summary>
-        private readonly AutoResetEvent _itemStoredEvent = new AutoResetEvent(false);
+        private readonly AutoResetEvent _itemStored = new AutoResetEvent(false);
 
         /// <summary>
         /// Extract item event.
         /// Ёвент что новый итем извлечен; он должен автоматически сбрасыватьс€ после просыпани€
         /// </summary>
-        private readonly AutoResetEvent _itemRemovedEvent = new AutoResetEvent(true);
+        private readonly AutoResetEvent _itemRemoved = new AutoResetEvent(true);
 
         /// <summary>
         /// Shutdown (stop working) event.
         /// Ёвент завершени€ работы; его автоматически сбрасывать не надо
         /// </summary>
-        private readonly ManualResetEvent _stopEvent = new ManualResetEvent(false);
+        private readonly ManualResetEvent _stop = new ManualResetEvent(false);
 
         /// <summary>
         /// Dispose guard.
@@ -47,18 +47,6 @@ namespace Others.ItemProvider.SingleItem
         /// </summary>
         private T _value;
         
-        /// <summary>
-        /// Wait handles array used in removing items.
-        /// ћассив ожидателей, чтобы не создавать его каждый раз внутри DoAddItem
-        /// </summary>
-        private readonly WaitHandle[] _stopRemovedWaiters;
-
-        /// <summary>
-        /// Wait handles array used in adding items.
-        /// ћассив ожидателей, чтобы не создавать его каждый раз внутри DoGetItem
-        /// </summary>
-        private readonly WaitHandle[] _stopStoredWaiters;
-
         public SingleItemWaitProvider(
             IThreadSafeDisposer disposer
             )
@@ -69,18 +57,6 @@ namespace Others.ItemProvider.SingleItem
             }
 
             _disposer = disposer;
-
-            _stopRemovedWaiters = new WaitHandle[]
-            {
-                _stopEvent,
-                _itemRemovedEvent
-            };
-
-            _stopStoredWaiters = new WaitHandle[]
-            {
-                _stopEvent,
-                _itemStoredEvent
-            };
         }
 
         public OperationResultEnum AddItem(
@@ -111,7 +87,34 @@ namespace Others.ItemProvider.SingleItem
                 {
                     myResult = DoAddItem(
                         t,
+                        null,
                         timeout
+                        );
+                });
+
+            return
+                myResult;
+        }
+
+        public OperationResultEnum AddItem(
+            T t,
+            WaitHandle externalBreakHandle
+            )
+        {
+            if (t == null)
+            {
+                throw new ArgumentNullException("t");
+            }
+
+            var myResult = OperationResultEnum.Dispose;
+
+            _disposer.DoWorkSafely(
+                () =>
+                {
+                    myResult = DoAddItem(
+                        t,
+                        externalBreakHandle,
+                        TimeSpan.FromMilliseconds(-1)
                         );
                 });
 
@@ -143,6 +146,43 @@ namespace Others.ItemProvider.SingleItem
                 {
                     myResult = DoGetItem(
                         timeout,
+                        null,
+                        out myResultItem
+                        );
+                });
+
+            resultItem = myResultItem;
+
+            return
+                myResult;
+        }
+
+        /// <summary>
+        /// Get item from the container. It will wait in case of no item was stored.
+        /// ѕолучить итем. ≈сли итемов нет - ждать указаный таймаут.
+        /// </summary>
+        /// <param name="externalBreakHandle">External break handle. ¬нешний хендл прерывани€ ожидани€</param>
+        /// <param name="resultItem">Extracted item if success otherwise default(T). ¬озвращаемый итем</param>
+        /// <returns>Operation result. –езультат операции</returns>
+        public OperationResultEnum GetItem(
+            WaitHandle externalBreakHandle, 
+            out T resultItem
+            )
+        {
+            if (externalBreakHandle == null)
+            {
+                throw new ArgumentNullException("externalBreakHandle");
+            }
+
+            var myResult = OperationResultEnum.Dispose;
+            var myResultItem = default(T);
+
+            _disposer.DoWorkSafely(
+                () =>
+                {
+                    myResult = DoGetItem(
+                        TimeSpan.FromMilliseconds(-1),
+                        externalBreakHandle,
                         out myResultItem
                         );
                 });
@@ -160,7 +200,7 @@ namespace Others.ItemProvider.SingleItem
 
             //fire the shutdown event
             //вызываем сигнал остановки потоков
-            _stopEvent.Set();
+            _stop.Set();
 
             //do safe dispose
             //и диспозимс€ когда все триды завершатс€
@@ -171,6 +211,7 @@ namespace Others.ItemProvider.SingleItem
 
         private OperationResultEnum DoAddItem(
             T t,
+            WaitHandle externalBreakHandle,
             TimeSpan timeout
             )
         {
@@ -178,12 +219,13 @@ namespace Others.ItemProvider.SingleItem
             {
                 throw new ArgumentNullException("t");
             }
+            //externalBreakHandle allowed to be null
 
             OperationResultEnum result;
 
             //ожидаем, что произойдет
             var r = WaitHandle.WaitAny(
-                _stopRemovedWaiters,
+                GetRemovedWaitHandles(externalBreakHandle),
                 timeout
                 );
 
@@ -198,6 +240,11 @@ namespace Others.ItemProvider.SingleItem
                 case 1:
                     //сработал эвент, что итем извлечен
                     result = OperationResultEnum.Success;
+                    break;
+
+                case 2:
+                    //сработало внешнее условие прерывани€
+                    result = OperationResultEnum.ExternalCondition;
                     break;
 
                 case System.Threading.WaitHandle.WaitTimeout:
@@ -220,7 +267,7 @@ namespace Others.ItemProvider.SingleItem
                     throw new InvalidOperationException("—тарый итем не был забран, это кака€-то ошибка!");
                 }
 
-                _itemStoredEvent.Set();
+                _itemStored.Set();
             }
 
             return
@@ -229,12 +276,15 @@ namespace Others.ItemProvider.SingleItem
 
         private OperationResultEnum DoGetItem(
             TimeSpan timeout,
+            WaitHandle externalBreakHandle,
             out T resultItem
             )
         {
+            //externalBreakHandle allowed to be null
+
             //ожидаем, что произойдет
             var r = WaitHandle.WaitAny(
-                _stopStoredWaiters,
+                GetStoredWaitHandles(externalBreakHandle),
                 timeout
                 );
 
@@ -257,8 +307,13 @@ namespace Others.ItemProvider.SingleItem
                         throw new InvalidOperationException("Ќовый итем равен null, это кака€-то ошибка");
                     }
 
-                    _itemRemovedEvent.Set();
+                    _itemRemoved.Set();
                     result = OperationResultEnum.Success;
+                    break;
+
+                case 2:
+                    //сработало внешнее условие прерывани€
+                    result = OperationResultEnum.ExternalCondition;
                     break;
 
                 case System.Threading.WaitHandle.WaitTimeout:
@@ -274,6 +329,64 @@ namespace Others.ItemProvider.SingleItem
                 result;
         }
 
+        private WaitHandle[] GetRemovedWaitHandles(
+            WaitHandle externalBreakHandle
+            )
+        {
+            if (externalBreakHandle == null)
+            {
+                var result = new WaitHandle[]
+                {
+                    _stop,
+                    _itemRemoved
+                };
+
+                return
+                    result;
+            }
+            else
+            {
+                var result = new WaitHandle[]
+                {
+                    _stop,
+                    _itemRemoved,
+                    externalBreakHandle
+                };
+
+                return
+                    result;
+            }
+        }
+
+        private WaitHandle[] GetStoredWaitHandles(
+            WaitHandle externalBreakHandle
+            )
+        {
+            if (externalBreakHandle == null)
+            {
+                var result = new WaitHandle[]
+                {
+                    _stop,
+                    _itemStored
+                };
+
+                return
+                    result;
+            }
+            else
+            {
+                var result = new WaitHandle[]
+                {
+                    _stop,
+                    _itemStored,
+                    externalBreakHandle
+                };
+
+                return
+                    result;
+            }
+        }
+
         private void DoDispose()
         {
             //safe dispose:
@@ -287,9 +400,9 @@ namespace Others.ItemProvider.SingleItem
 
             //dispose all disposable resources
             //утилизируем всЄ
-            _stopEvent.Dispose();
-            _itemStoredEvent.Dispose();
-            _itemRemovedEvent.Dispose();
+            _stop.Dispose();
+            _itemStored.Dispose();
+            _itemRemoved.Dispose();
         }
 
         #endregion

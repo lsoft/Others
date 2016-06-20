@@ -1,4 +1,4 @@
-namespace Others.Tests.ItemProvider
+namespace Others.Tests.ItemProvider.Stuff
 {
     internal class Item
     {

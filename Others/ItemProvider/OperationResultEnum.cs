@@ -22,6 +22,12 @@ namespace Others.ItemProvider
         /// Operation cancelled due to dispose is performing.
         /// Операция не завершена, так как класс получил приказ утилизироваться.
         /// </summary>
-        Dispose
+        Dispose,
+
+        /// <summary>
+        /// Operation cancelled due to external event.
+        /// Операция прервана по внешнему событию
+        /// </summary>
+        ExternalCondition
     }
 }

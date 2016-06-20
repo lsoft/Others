@@ -43,6 +43,11 @@
     <Compile Include="Disposer\OptimisticDisposer.cs" />
     <Compile Include="Disposer\PessimisticDisposer.cs" />
     <Compile Include="Disposer\ThreadUnsafeDisposer.cs" />
+    <Compile Include="Event\Monitor\Group\MonitorEventGroup.cs" />
+    <Compile Include="Event\Monitor\MonitorAutoResetEvent.cs" />
+    <Compile Include="Event\Monitor\MonitorBaseResetEvent.cs" />
+    <Compile Include="Event\Monitor\MonitorEventTypeEnum.cs" />
+    <Compile Include="Event\Monitor\MonitorManualResetEvent.cs" />
     <Compile Include="Helper\PerformanceTimer.cs" />
     <Compile Include="ItemProvider\IItemWaitProvider.cs" />
     <Compile Include="ItemProvider\OperationResultEnum.cs" />
@@ -52,6 +57,29 @@
     <Compile Include="ItemProvider\SingleItem\ISingleItemWaitProvider.cs" />
     <Compile Include="ItemProvider\SingleItem\SingleItemWaitProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Scheduler\Scheduler.cs" />
+    <Compile Include="Scheduler\Event\SchedulerEventDelegate.cs" />
+    <Compile Include="Scheduler\Event\SchedulerEventDescription.cs" />
+    <Compile Include="Scheduler\Event\SchedulerEventTypeEnum.cs" />
+    <Compile Include="Scheduler\IScheduler.cs" />
+    <Compile Include="Scheduler\Logger\ISchedulerLogger.cs" />
+    <Compile Include="Scheduler\Logger\TextSchedulerLogger.cs" />
+    <Compile Include="Scheduler\SchedulerThread\Factory\IThreadFactory.cs" />
+    <Compile Include="Scheduler\SchedulerThread\Factory\StandardThreadFactory.cs" />
+    <Compile Include="Scheduler\SchedulerThread\IThread.cs" />
+    <Compile Include="Scheduler\SchedulerThread\ThreadWrapper.cs" />
+    <Compile Include="Scheduler\Task\ActionTask.cs" />
+    <Compile Include="Scheduler\Task\BaseTask.cs" />
+    <Compile Include="Scheduler\Task\ITask.cs" />
+    <Compile Include="Scheduler\WaitGroup\IWaitGroup.cs" />
+    <Compile Include="Scheduler\WaitGroup\IWaitGroupFactory.cs" />
+    <Compile Include="Scheduler\WaitGroup\Monitor\MonitorWaitGroup.cs" />
+    <Compile Include="Scheduler\WaitGroup\Monitor\MonitorWaitGroupFactory.cs" />
+    <Compile Include="Scheduler\WaitGroup\Spin\SpinWaitGroup.cs" />
+    <Compile Include="Scheduler\WaitGroup\Spin\SpinWaitGroupFactory.cs" />
+    <Compile Include="Scheduler\WaitGroup\Standard\StandardWaitGroup.cs" />
+    <Compile Include="Scheduler\WaitGroup\Standard\StandardWaitGroupFactory.cs" />
+    <Compile Include="Scheduler\WaitGroup\WaitGroupEventEnum.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

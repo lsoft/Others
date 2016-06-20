@@ -56,14 +56,19 @@
     <Compile Include="Disposer\OptimisticDisposerFixture.cs" />
     <Compile Include="Disposer\PessimisticDisposerFixture.cs" />
     <Compile Include="Disposer\ThreadUnsafeDisposedFixture.cs" />
-    <Compile Include="Helper\DisposerTest.cs" />
-    <Compile Include="Helper\QItem.cs" />
-    <Compile Include="Helper\TestStat.cs" />
-    <Compile Include="ItemProvider\Item.cs" />
+    <Compile Include="Disposer\Stuff\DisposerTest.cs" />
+    <Compile Include="Disposer\Stuff\QItem.cs" />
+    <Compile Include="Disposer\Stuff\TestStat.cs" />
+    <Compile Include="ItemProvider\Stuff\Item.cs" />
     <Compile Include="ItemProvider\MonitorWaitProviderFixture.cs" />
     <Compile Include="ItemProvider\QueueFixture.cs" />
     <Compile Include="ItemProvider\SemaphoreWaitProviderFixture.cs" />
     <Compile Include="ItemProvider\SingleItemWaitFixture.cs" />
+    <Compile Include="PerformanceScheduler\SchedulerFixture.cs" />
+    <Compile Include="PerformanceScheduler\Stuff\Helper.cs" />
+    <Compile Include="PerformanceScheduler\Stuff\HighestPriorityThreadFactory.cs" />
+    <Compile Include="PerformanceScheduler\Stuff\Point.cs" />
+    <Compile Include="PerformanceScheduler\Stuff\TestTask.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

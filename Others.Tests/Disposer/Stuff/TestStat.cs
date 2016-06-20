@@ -1,4 +1,4 @@
-namespace Others.Tests.Helper
+namespace Others.Tests.Disposer.Stuff
 {
     public class TestStat
     {

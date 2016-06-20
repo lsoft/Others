@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Others.ItemProvider;
+using Others.Tests.ItemProvider.Stuff;
 
 namespace Others.Tests.ItemProvider
 {

@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Others.Disposer;
 using Others.ItemProvider.Queue;
+using Others.Tests.ItemProvider.Stuff;
 
 namespace Others.Tests.ItemProvider
 {

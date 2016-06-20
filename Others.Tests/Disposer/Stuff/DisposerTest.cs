@@ -4,7 +4,7 @@ using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Others.Disposer;
 
-namespace Others.Tests.Helper
+namespace Others.Tests.Disposer.Stuff
 {
     public class DisposerTest
     {

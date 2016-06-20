@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 
 namespace Others.ItemProvider
 {
@@ -32,6 +33,17 @@ namespace Others.ItemProvider
             );
 
         /// <summary>
+        /// Добавить итем
+        /// </summary>
+        /// <param name="t">Item. Добавляемый итем</param>
+        /// <param name="externalBreakHandle">External break handle. Внешний хендл прерывания ожидания</param>
+        /// <returns>Результат операции</returns>
+        OperationResultEnum AddItem(
+            T t,
+            WaitHandle externalBreakHandle
+            );
+
+        /// <summary>
         /// Get item from the container. It will wait in case of no item was stored.
         /// Получить итем. Если итемов нет - ждать неопределенно долго.
         /// </summary>
@@ -50,6 +62,18 @@ namespace Others.ItemProvider
         /// <returns>Operation result. Результат операции</returns>
         OperationResultEnum GetItem(
             TimeSpan timeout,
+            out T resultItem
+            );
+
+        /// <summary>
+        /// Get item from the container. It will wait in case of no item was stored.
+        /// Получить итем. Если итемов нет - ждать указаный таймаут.
+        /// </summary>
+        /// <param name="externalBreakHandle">External break handle. Внешний хендл прерывания ожидания</param>
+        /// <param name="resultItem">Extracted item if success otherwise default(T). Возвращаемый итем</param>
+        /// <returns>Operation result. Результат операции</returns>
+        OperationResultEnum GetItem(
+            WaitHandle externalBreakHandle,
             out T resultItem
             );
     }

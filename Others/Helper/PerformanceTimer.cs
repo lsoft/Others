@@ -3,22 +3,22 @@ using System.Runtime.InteropServices;
 
 namespace Others.Helper
 {
-    /// <summary>
-    /// High resolution system timer.
-    /// </summary>
-    internal class PerformanceTimer
+    public class PerformanceTimer 
     {
-        private readonly bool _isPerfCounterSupported = false;
-        private readonly Int64 _currentFrequency = 0;
-        private readonly Int64 _startValue = 0;
+        private const string LibName = "kernel32.dll";
 
-        [DllImport("kernel32.dll")]
-        private static extern int QueryPerformanceCounter(ref Int64 count);
+        [DllImport(LibName)]
+        private static extern int QueryPerformanceCounter(ref long count);
 
-        [DllImport("kernel32.dll")]
-        private static extern int QueryPerformanceFrequency(ref Int64 frequency);
+        [DllImport(LibName)]
+        private static extern int QueryPerformanceFrequency(ref long frequency);
 
-        public PerformanceTimer()
+        private static readonly bool _isPerfCounterSupported = false;
+        public static readonly double Frequency = 0;
+
+        private long _startValue = 0L;
+
+        static PerformanceTimer()
         {
             // Query the high-resolution timer only if it is supported.
             // A returned frequency of 1000 typically indicates that it is not
@@ -26,59 +26,103 @@ namespace Others.Helper
             // returned by Environment.TickCount.
             // A return value of 0 indicates that the performance counter is
             // not supported.
-            int returnVal = QueryPerformanceFrequency(ref _currentFrequency);
+            long frequency = 0L;
+            int returnVal = QueryPerformanceFrequency(ref frequency);
 
-            if (returnVal != 0 && _currentFrequency != 1000)
+            if (returnVal != 0 && frequency != 1000)
             {
                 // The performance counter is supported.
                 _isPerfCounterSupported = true;
+                Frequency = (double)frequency;
             }
             else
             {
                 // The performance counter is not supported. Use
                 // Environment.TickCount instead.
-                _currentFrequency = 1000;
+                Frequency = 1000.0;
             }
+        }
 
+        public PerformanceTimer()
+        {
+            Restart();
+        }
+
+        public void Restart()
+        {
             _startValue = Value;
         }
 
-        public Int64 Frequency
+        public long NanoSeconds
         {
             get
             {
-                return _currentFrequency;
-            }
-        }
+                var diff = Value - _startValue;
+                diff *= 1000000000L;
+                var ddiff = diff / Frequency;
 
-        /// <summary>
-        /// Time interval in seconds.
-        /// </summary>
-        public double TimeInterval
-        {
-            get
-            {
                 return
-                    (Value - _startValue) / (double)Frequency;
+                    (long)ddiff;
             }
         }
 
-        public Int64 Value
+        public long MicroSeconds
         {
             get
             {
-                Int64 tickCount = 0;
+                var diff = Value - _startValue;
+                diff *= 1000000L;
+                var ddiff = diff / Frequency;
+
+                return
+                    (long)ddiff;
+            }
+        }
+
+        public double MilliSeconds
+        {
+            get
+            {
+                var diff = Value - _startValue;
+                diff *= 1000L;
+                var ddiff = diff / Frequency;
+
+                return
+                    ddiff;
+            }
+        }
+
+        public double Seconds
+        {
+            get
+            {
+                var diff = Value - _startValue;
+                var ddiff = diff / Frequency;
+
+                return
+                    ddiff;
+            }
+        }
+
+        public long Value
+        {
+            get
+            {
+                long tickCount = 0;
 
                 if (_isPerfCounterSupported)
                 {
                     // Get the value here if the counter is supported.
                     QueryPerformanceCounter(ref tickCount);
-                    return tickCount;
+                    
+                    return
+                        tickCount;
                 }
                 else
                 {
                     // Otherwise, use Environment.TickCount.
-                    return (Int64)Environment.TickCount;
+                    return
+                        (long)Environment.TickCount;
                 }
             }
         }

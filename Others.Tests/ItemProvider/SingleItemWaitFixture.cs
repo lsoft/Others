@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Others.Disposer;
 using Others.ItemProvider;
 using Others.ItemProvider.SingleItem;
+using Others.Tests.ItemProvider.Stuff;
 
 namespace Others.Tests.ItemProvider
 {

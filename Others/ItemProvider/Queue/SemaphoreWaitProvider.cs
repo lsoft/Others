@@ -133,6 +133,13 @@ namespace Others.ItemProvider.Queue
                     );
         }
 
+        public OperationResultEnum AddItem(
+            T t,
+            WaitHandle externalBreakHandle
+            )
+        {
+            throw new NotImplementedException("Not implemented yet.");
+        }
 
         public OperationResultEnum GetItem(
             out T resultItem
@@ -166,6 +173,14 @@ namespace Others.ItemProvider.Queue
 
             return
                 myResult;
+        }
+
+        public OperationResultEnum GetItem(
+            WaitHandle externalBreakHandle,
+            out T resultItem
+            )
+        {
+            throw new NotImplementedException("Not implemented yet.");
         }
 
         public void Dispose()

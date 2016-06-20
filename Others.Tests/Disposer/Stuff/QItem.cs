@@ -1,6 +1,6 @@
 using System.Threading;
 
-namespace Others.Tests.Helper
+namespace Others.Tests.Disposer.Stuff
 {
     public class QItem
     {

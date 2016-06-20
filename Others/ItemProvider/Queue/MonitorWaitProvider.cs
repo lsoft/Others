@@ -18,13 +18,13 @@ namespace Others.ItemProvider.Queue
         /// Awake worker thread event.
         /// Событие пробуждения потока
         /// </summary>
-        private readonly ManualResetEvent _awakeEvent = new ManualResetEvent(false);
+        private readonly ManualResetEvent _awake = new ManualResetEvent(false);
 
         /// <summary>
         /// Shutdown (stop working) event.
         /// Эвент завершения работы; его автоматически сбрасывать не надо
         /// </summary>
-        private readonly ManualResetEvent _stopEvent = new ManualResetEvent(false);
+        private readonly ManualResetEvent _stop = new ManualResetEvent(false);
 
         /// <summary>
         /// Item queue.
@@ -57,8 +57,8 @@ namespace Others.ItemProvider.Queue
 
             _waiters = new WaitHandle[]
             {
-                _stopEvent,
-                _awakeEvent
+                _stop,
+                _awake
             };
         }
 
@@ -134,6 +134,14 @@ namespace Others.ItemProvider.Queue
                     );
         }
 
+        public OperationResultEnum AddItem(
+            T t,
+            WaitHandle externalBreakHandle
+            )
+        {
+            throw new NotImplementedException("Not implemented yet.");
+        }
+
         public OperationResultEnum GetItem(
             out T resultItem
             )
@@ -168,6 +176,14 @@ namespace Others.ItemProvider.Queue
                 myResult;
         }
 
+        public OperationResultEnum GetItem(
+            WaitHandle externalBreakHandle,
+            out T resultItem
+            )
+        {
+            throw new NotImplementedException("Not implemented yet.");
+        }
+
         public void Dispose()
         {
             //need to stop working threads
@@ -175,7 +191,7 @@ namespace Others.ItemProvider.Queue
 
             //fire the shutdown event
             //принуждаем потоки проснуться и сигнализируем им что надо остановиться
-            _stopEvent.Set();
+            _stop.Set();
 
             //do safe dispose
             //и диспозимся когда все триды завершатся
@@ -206,7 +222,7 @@ namespace Others.ItemProvider.Queue
 
                     if (count == 1)
                     {
-                        _awakeEvent.Set();
+                        _awake.Set();
                     }
 
                 }
@@ -233,7 +249,7 @@ namespace Others.ItemProvider.Queue
                 _waiters,
                 timeout
                 );
-            var waitTaken = pt.TimeInterval;
+            var waitTaken = pt.Seconds;
 
             if (r == 0)
             {
@@ -262,7 +278,7 @@ namespace Others.ItemProvider.Queue
                 }
                 else
                 {
-                    _awakeEvent.Reset();
+                    _awake.Reset();
 
                     if (timeout.Ticks <= 0)
                     {
@@ -313,7 +329,8 @@ namespace Others.ItemProvider.Queue
 
             //dispose all disposable resources
             //утилизируем всё
-            _awakeEvent.Dispose();
+            _awake.Dispose();
+            _stop.Dispose();
         }
 
         #endregion

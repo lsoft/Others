@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Others.Disposer;
-using Others.Tests.Helper;
+using Others.Tests.Disposer.Stuff;
 
 namespace Others.Tests.Disposer
 {
