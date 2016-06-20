@@ -183,6 +183,15 @@ namespace Others.ItemProvider.Queue
             throw new NotImplementedException("Not implemented yet.");
         }
 
+        public OperationResultEnum GetItem(
+            TimeSpan timeout,
+            WaitHandle externalBreakHandle,
+            out T resultItem
+            )
+        {
+            throw new NotImplementedException("Not implemented yet.");
+        }
+
         public void Dispose()
         {
             //need to stop working threads

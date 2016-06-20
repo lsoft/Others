@@ -76,5 +76,19 @@ namespace Others.ItemProvider
             WaitHandle externalBreakHandle,
             out T resultItem
             );
+
+        /// <summary>
+        /// Get item from the container. It will wait in case of no item was stored.
+        /// Получить итем. Если итемов нет - ждать указаный таймаут.
+        /// </summary>
+        /// <param name="timeout">Operation timeout. Таймаут операции</param>
+        /// <param name="externalBreakHandle">External break handle. Внешний хендл прерывания ожидания</param>
+        /// <param name="resultItem">Extracted item if success otherwise default(T). Возвращаемый итем</param>
+        /// <returns>Operation result. Результат операции</returns>
+        OperationResultEnum GetItem(
+            TimeSpan timeout,
+            WaitHandle externalBreakHandle,
+            out T resultItem
+            );
     }
 }

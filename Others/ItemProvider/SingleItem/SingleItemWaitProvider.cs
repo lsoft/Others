@@ -157,15 +157,22 @@ namespace Others.ItemProvider.SingleItem
                 myResult;
         }
 
-        /// <summary>
-        /// Get item from the container. It will wait in case of no item was stored.
-        /// Получить итем. Если итемов нет - ждать указаный таймаут.
-        /// </summary>
-        /// <param name="externalBreakHandle">External break handle. Внешний хендл прерывания ожидания</param>
-        /// <param name="resultItem">Extracted item if success otherwise default(T). Возвращаемый итем</param>
-        /// <returns>Operation result. Результат операции</returns>
         public OperationResultEnum GetItem(
             WaitHandle externalBreakHandle, 
+            out T resultItem
+            )
+        {
+            return 
+                GetItem(
+                    TimeSpan.FromMilliseconds(-1),
+                    externalBreakHandle,
+                    out resultItem
+                );
+        }
+
+        public OperationResultEnum GetItem(
+            TimeSpan timeout,
+            WaitHandle externalBreakHandle,
             out T resultItem
             )
         {
@@ -181,7 +188,7 @@ namespace Others.ItemProvider.SingleItem
                 () =>
                 {
                     myResult = DoGetItem(
-                        TimeSpan.FromMilliseconds(-1),
+                        timeout,
                         externalBreakHandle,
                         out myResultItem
                         );
