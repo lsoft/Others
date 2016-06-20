@@ -98,12 +98,17 @@ namespace Others.ItemProvider.SingleItem
 
         public OperationResultEnum AddItem(
             T t,
+            TimeSpan timeout,
             WaitHandle externalBreakHandle
             )
         {
             if (t == null)
             {
                 throw new ArgumentNullException("t");
+            }
+            if (externalBreakHandle == null)
+            {
+                throw new ArgumentNullException("externalBreakHandle");
             }
 
             var myResult = OperationResultEnum.Dispose;
@@ -114,12 +119,25 @@ namespace Others.ItemProvider.SingleItem
                     myResult = DoAddItem(
                         t,
                         externalBreakHandle,
-                        TimeSpan.FromMilliseconds(-1)
+                        timeout
                         );
                 });
 
             return
                 myResult;
+        }
+
+        public OperationResultEnum AddItem(
+            T t,
+            WaitHandle externalBreakHandle
+            )
+        {
+            return
+                AddItem(
+                    t,
+                    TimeSpan.FromMilliseconds(-1),
+                    externalBreakHandle
+                );
         }
 
         public OperationResultEnum GetItem(

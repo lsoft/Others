@@ -36,6 +36,19 @@ namespace Others.ItemProvider
         /// Добавить итем
         /// </summary>
         /// <param name="t">Item. Добавляемый итем</param>
+        /// <param name="timeout">Operation timeout. Таймаут операции</param>
+        /// <param name="externalBreakHandle">External break handle. Внешний хендл прерывания ожидания</param>
+        /// <returns>Результат операции</returns>
+        OperationResultEnum AddItem(
+            T t,
+            TimeSpan timeout,
+            WaitHandle externalBreakHandle
+            );
+
+        /// <summary>
+        /// Добавить итем
+        /// </summary>
+        /// <param name="t">Item. Добавляемый итем</param>
         /// <param name="externalBreakHandle">External break handle. Внешний хендл прерывания ожидания</param>
         /// <returns>Результат операции</returns>
         OperationResultEnum AddItem(

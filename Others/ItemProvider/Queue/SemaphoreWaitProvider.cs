@@ -135,6 +135,15 @@ namespace Others.ItemProvider.Queue
 
         public OperationResultEnum AddItem(
             T t,
+            TimeSpan timeout,
+            WaitHandle externalBreakHandle
+            )
+        {
+            throw new NotImplementedException("Not implemented yet.");
+        }
+
+        public OperationResultEnum AddItem(
+            T t,
             WaitHandle externalBreakHandle
             )
         {
