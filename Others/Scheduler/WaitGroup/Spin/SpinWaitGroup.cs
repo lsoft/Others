@@ -54,7 +54,6 @@ namespace Others.Scheduler.WaitGroup.Spin
                     break;
                 }
 
-                //at first check restartRaised - it raised often, in opposition of stopRaised - it raised once
                 //restartRaised - is an 'auto' event , so we need to 'reset' the event
                 var restartRaised = Interlocked.Exchange(ref _restartRaised, 0L);
                 if (restartRaised > 0L)
