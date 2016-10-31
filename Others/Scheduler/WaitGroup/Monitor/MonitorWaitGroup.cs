@@ -35,13 +35,6 @@ namespace Others.Scheduler.WaitGroup.Monitor
             long microsecondsToAwake
             )
         {
-            //ожидать не надо, так как время ожидания указано равным нулю
-            if (microsecondsToAwake == 0)
-            {
-                return
-                    WaitGroupEventEnum.WaitTimeout;
-            }
-
             //так как данный метод ожидания не может ожидать микросекунды, то конвертируем значение в миллисекунды
             //и повторяем анализ
 
@@ -53,6 +46,12 @@ namespace Others.Scheduler.WaitGroup.Monitor
                 //значит надо дальше отдать значение -1 миллисекунда, что и означает "ждать бесконечно долго"
 
                 millisecondsToWait = -1;
+            }
+            else if (microsecondsToAwake == 0)
+            {
+                //ждать не надо, просто надо проверить сигналы
+
+                millisecondsToWait = 0;
             }
             else
             {
@@ -67,10 +66,9 @@ namespace Others.Scheduler.WaitGroup.Monitor
                     //если значение = 0: нас просят ждать слишком малый интервал для этого метода 
                     //если значение < 0: уже прошляпили момент времени старта таски
 
-                    //в любом случае ждать не надо
+                    //в любом случае ждать не будем, просто проверим состояние сигналов
 
-                    return
-                        WaitGroupEventEnum.WaitTimeout;
+                    millisecondsToWait = 0;
                 }
 
                 //на всякий случай проверим переполнение

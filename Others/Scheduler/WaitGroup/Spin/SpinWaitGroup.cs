@@ -30,15 +30,8 @@ namespace Others.Scheduler.WaitGroup.Spin
             long microsecondsToAwake
             )
         {
-            if (microsecondsToAwake != -1 && microsecondsToAwake <= _performanceTimer.MicroSeconds)
-            {
-                return
-                    WaitGroupEventEnum.WaitTimeout;
-            }
-
             var result = WaitGroupEventEnum.WaitTimeout;
 
-           
             var spinWait = new SpinWait();
 
             while (true)
@@ -60,6 +53,12 @@ namespace Others.Scheduler.WaitGroup.Spin
                 {
                     result = WaitGroupEventEnum.Restart;
 
+                    break;
+                }
+
+                //если ждать не надо, сразу выходим
+                if (microsecondsToAwake == 0)
+                {
                     break;
                 }
 
