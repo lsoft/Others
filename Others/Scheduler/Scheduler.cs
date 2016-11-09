@@ -238,7 +238,13 @@ namespace Others.Scheduler
                                     //рейзим событие завершения выполнения таска
                                     OnTaskEndExecution(closedTask.TaskGuid);
 
-                                    if (!needToRepeat)
+                                    if (needToRepeat)
+                                    {
+                                        //задачу надо повторить, у нее изменилось поле (микросекундный таймер) следующего запуска
+                                        //надо обновить эту задачу в контейнере, чтобы произошел ребаланс
+                                        _taskContainer.Refresh(closedTask);
+                                    }
+                                    else
                                     {
                                         //удаляем задачу из шедулера
                                         //в случае ошибки уйдем на самый внешний catch
@@ -490,6 +496,22 @@ namespace Others.Scheduler
                 {
                     _set.Remove(task);
                     _dict.Remove(task.TaskGuid);
+                }
+            }
+
+            public void Refresh(
+                ISchedulerTask task
+                )
+            {
+                if (task == null)
+                {
+                    throw new ArgumentNullException("task");
+                }
+
+                lock (_locker)
+                {
+                    _set.Remove(task);
+                    _set.Add(task);
                 }
             }
 
